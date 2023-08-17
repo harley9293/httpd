@@ -11,6 +11,8 @@ type routes struct {
 	method      string
 	fn          reflect.Value
 	middlewares []MiddlewareFunc
+
+	empty bool
 }
 
 type router struct {
@@ -39,8 +41,8 @@ func handlerVerify(value reflect.Value) error {
 	return nil
 }
 
-func (m *router) add(method, path string, f any, middlewares ...MiddlewareFunc) error {
-	for _, v := range m.data {
+func (r *router) register(method, path string, f any, middlewares ...MiddlewareFunc) error {
+	for _, v := range r.data {
 		if v.method == method && v.path == path {
 			return errors.New(fmt.Sprintf("handler already exists,method:%s, path:%s", method, path))
 		}
@@ -52,7 +54,7 @@ func (m *router) add(method, path string, f any, middlewares ...MiddlewareFunc) 
 		return err
 	}
 
-	m.data = append(m.data, &routes{
+	r.data = append(r.data, &routes{
 		path:        path,
 		method:      method,
 		fn:          fn,
@@ -62,11 +64,11 @@ func (m *router) add(method, path string, f any, middlewares ...MiddlewareFunc) 
 	return nil
 }
 
-func (m *router) get(method, path string) *routes {
-	for _, v := range m.data {
+func (r *router) match(method, path string) *routes {
+	for _, v := range r.data {
 		if v.method == method && v.path == path {
 			return v
 		}
 	}
-	return nil
+	return &routes{empty: true}
 }

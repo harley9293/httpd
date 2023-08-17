@@ -2,29 +2,30 @@ package httpd
 
 import (
 	"encoding/json"
+	"errors"
 	log "github.com/harley9293/blotlog"
-	"github.com/harley9293/httpd/session"
 	"net/http"
 	"reflect"
 )
 
 const IndexError = -1
 
+type MiddlewareFunc func(*Context)
+
 type Context struct {
-	Session session.Session
+	r      *http.Request
+	w      http.ResponseWriter
+	routes *routes
 
-	r       *http.Request
-	w       http.ResponseWriter
-	service *Service
-
-	fn reflect.Value
-
-	index       int
-	middlewares []MiddlewareFunc
+	index int
 }
 
-func (c *Context) CreateSession(key string) {
-	c.Session = c.service.NewSession(key)
+func newContext(r *http.Request, w http.ResponseWriter, routes *routes) *Context {
+	return &Context{
+		r:      r,
+		w:      w,
+		routes: routes,
+	}
 }
 
 func (c *Context) Error(status int, err error) {
@@ -64,16 +65,21 @@ func (c *Context) Next() {
 	}
 
 	c.index++
-	if c.index <= len(c.middlewares) {
-		c.middlewares[c.index-1](c)
+	if c.index <= len(c.routes.middlewares) {
+		c.routes.middlewares[c.index-1](c)
 	}
-	c.CallHandler()
+	c.callHandler()
 }
 
-func (c *Context) CallHandler() {
+func (c *Context) callHandler() {
+	if c.routes.empty {
+		c.Error(http.StatusNotFound, errors.New(http.StatusText(http.StatusNotFound)))
+		return
+	}
+
 	var params []reflect.Value
-	if c.fn.Type().NumIn() > 1 {
-		arg := reflect.New(c.fn.Type().In(0))
+	if c.routes.fn.Type().NumIn() > 1 {
+		arg := reflect.New(c.routes.fn.Type().In(0))
 		contentType := c.r.Header.Get("Content-Type")
 		switch contentType {
 		case "application/json":
@@ -105,5 +111,5 @@ func (c *Context) CallHandler() {
 	}
 
 	params = append(params, reflect.ValueOf(c))
-	c.fn.Call(params)
+	c.routes.fn.Call(params)
 }
