@@ -2,13 +2,9 @@ package httpd
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 )
-
-var HandlerTypeError = errors.New("add handler type error, got:%T")
-var HandlerParamPointerError = errors.New("handler param must be pointer")
-var HandlerSecondParamTypeError = errors.New("handler second param must be *Context")
-var HandlerRepeatedError = errors.New("handler path already exists,method:%s, path:%s")
 
 type routes struct {
 	path        string
@@ -27,17 +23,17 @@ func newRouter() *router {
 
 func handlerVerify(value reflect.Value) error {
 	if value.Type().Kind() != reflect.Func {
-		return HandlerTypeError
+		return errors.New("add handler type error")
 	}
 
 	for i := 0; i < value.Type().NumIn(); i++ {
 		if value.Type().In(i).Kind() != reflect.Ptr {
-			return HandlerParamPointerError
+			return errors.New("handler param must be pointer")
 		}
 	}
 
 	if value.Type().In(value.Type().NumIn()-1) != reflect.TypeOf(&Context{}) {
-		return HandlerSecondParamTypeError
+		return errors.New("handler second param must be *Context")
 	}
 
 	return nil
@@ -46,7 +42,7 @@ func handlerVerify(value reflect.Value) error {
 func (m *router) add(method, path string, f any, middlewares ...MiddlewareFunc) error {
 	for _, v := range m.data {
 		if v.method == method && v.path == path {
-			return HandlerRepeatedError
+			return errors.New(fmt.Sprintf("handler already exists,method:%s, path:%s", method, path))
 		}
 	}
 
