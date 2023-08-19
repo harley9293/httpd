@@ -1,8 +1,6 @@
 package httpd
 
 import (
-	"crypto/rand"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	log "github.com/harley9293/blotlog"
@@ -19,17 +17,9 @@ type Context struct {
 	w       http.ResponseWriter
 	routes  *routes
 	session *Session
+	config  *Config
 
 	index int
-}
-
-func newContext(r *http.Request, w http.ResponseWriter, routes *routes, session *Session) *Context {
-	return &Context{
-		r:       r,
-		w:       w,
-		routes:  routes,
-		session: session,
-	}
 }
 
 func (c *Context) UseSession() *Session {
@@ -38,7 +28,7 @@ func (c *Context) UseSession() *Session {
 	if err == nil && cookie != nil {
 		token = cookie.Value
 	} else {
-		token = generateSessionID()
+		token = c.config.SessionGenerator.Rand()
 	}
 	c.session.Use(token)
 
@@ -134,14 +124,4 @@ func (c *Context) callHandler() {
 
 	params = append(params, reflect.ValueOf(c))
 	c.routes.fn.Call(params)
-}
-
-func generateSessionID() string {
-	key := make([]byte, 20)
-	_, err := rand.Read(key)
-	if err != nil {
-		panic(err)
-	}
-
-	return base64.StdEncoding.EncodeToString(key)
 }
