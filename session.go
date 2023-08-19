@@ -1,11 +1,11 @@
-package session
+package httpd
 
 type Session struct {
 	store Store
 	token string
 }
 
-func New(store Store) *Session {
+func newSession(store Store) *Session {
 	return &Session{store: store}
 }
 

@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	log "github.com/harley9293/blotlog"
-	"github.com/harley9293/httpd/session"
 	"net/http"
 	"reflect"
 )
@@ -19,12 +18,12 @@ type Context struct {
 	r       *http.Request
 	w       http.ResponseWriter
 	routes  *routes
-	session *session.Session
+	session *Session
 
 	index int
 }
 
-func newContext(r *http.Request, w http.ResponseWriter, routes *routes, session *session.Session) *Context {
+func newContext(r *http.Request, w http.ResponseWriter, routes *routes, session *Session) *Context {
 	return &Context{
 		r:       r,
 		w:       w,
@@ -33,7 +32,7 @@ func newContext(r *http.Request, w http.ResponseWriter, routes *routes, session 
 	}
 }
 
-func (c *Context) UseSession() *session.Session {
+func (c *Context) UseSession() *Session {
 	cookie, err := c.r.Cookie("token")
 	var token string
 	if err == nil && cookie != nil {

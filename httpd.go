@@ -2,7 +2,6 @@ package httpd
 
 import (
 	log "github.com/harley9293/blotlog"
-	"github.com/harley9293/httpd/session"
 	"net/http"
 )
 
@@ -11,14 +10,16 @@ type Service struct {
 
 	globalMiddlewares []MiddlewareFunc
 	router            *router
-	store             session.Store
+	store             Store
 }
 
-func NewService() *Service {
-	return &Service{
-		router: newRouter(),
-		store:  session.NewStore(&session.Default{}, 0),
-	}
+func NewService(config *Config) *Service {
+	config.fill()
+	s := &Service{}
+	s.router = newRouter()
+	s.store = config.SessionStore
+	s.store.Init(config.SessionKeepAliveTime)
+	return s
 }
 
 func (m *Service) AddHandler(method, path string, f any, middleware ...MiddlewareFunc) {
@@ -40,7 +41,7 @@ func (m *Service) LinstenAndServe(address string) error {
 		if ro.empty {
 			ro.middlewares = m.globalMiddlewares
 		}
-		s := session.New(m.store)
+		s := newSession(m.store)
 		c := newContext(r, w, ro, s)
 		c.Next()
 	})
