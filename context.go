@@ -1,9 +1,12 @@
 package httpd
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	log "github.com/harley9293/blotlog"
+	"github.com/harley9293/httpd/session"
 	"net/http"
 	"reflect"
 )
@@ -13,19 +16,39 @@ const IndexError = -1
 type MiddlewareFunc func(*Context)
 
 type Context struct {
-	r      *http.Request
-	w      http.ResponseWriter
-	routes *routes
+	r       *http.Request
+	w       http.ResponseWriter
+	routes  *routes
+	session *session.Session
 
 	index int
 }
 
-func newContext(r *http.Request, w http.ResponseWriter, routes *routes) *Context {
+func newContext(r *http.Request, w http.ResponseWriter, routes *routes, session *session.Session) *Context {
 	return &Context{
-		r:      r,
-		w:      w,
-		routes: routes,
+		r:       r,
+		w:       w,
+		routes:  routes,
+		session: session,
 	}
+}
+
+func (c *Context) UseSession() *session.Session {
+	cookie, err := c.r.Cookie("token")
+	var token string
+	if err == nil && cookie != nil {
+		token = cookie.Value
+	} else {
+		token = generateSessionID()
+	}
+	c.session.Use(token)
+
+	http.SetCookie(c.w, &http.Cookie{
+		Name:  "token",
+		Value: token,
+	})
+
+	return c.session
 }
 
 func (c *Context) Error(status int, err error) {
@@ -112,4 +135,14 @@ func (c *Context) callHandler() {
 
 	params = append(params, reflect.ValueOf(c))
 	c.routes.fn.Call(params)
+}
+
+func generateSessionID() string {
+	key := make([]byte, 20)
+	_, err := rand.Read(key)
+	if err != nil {
+		panic(err)
+	}
+
+	return base64.StdEncoding.EncodeToString(key)
 }

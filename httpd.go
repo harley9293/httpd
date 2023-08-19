@@ -2,6 +2,7 @@ package httpd
 
 import (
 	log "github.com/harley9293/blotlog"
+	"github.com/harley9293/httpd/session"
 	"net/http"
 )
 
@@ -10,11 +11,13 @@ type Service struct {
 
 	globalMiddlewares []MiddlewareFunc
 	router            *router
+	store             session.Store
 }
 
 func NewService() *Service {
 	return &Service{
 		router: newRouter(),
+		store:  session.NewStore(&session.Default{}, 0),
 	}
 }
 
@@ -37,7 +40,8 @@ func (m *Service) LinstenAndServe(address string) error {
 		if ro.empty {
 			ro.middlewares = m.globalMiddlewares
 		}
-		c := newContext(r, w, ro)
+		s := session.New(m.store)
+		c := newContext(r, w, ro, s)
 		c.Next()
 	})
 	m.srv = &http.Server{Addr: address, Handler: serveMux}
