@@ -3,7 +3,8 @@ package httpd
 import (
 	"bytes"
 	"errors"
-	"github.com/harley9293/httpd/default"
+	"github.com/harley9293/httpd/generator"
+	"github.com/harley9293/httpd/store"
 	"net/http"
 	"reflect"
 	"testing"
@@ -37,16 +38,16 @@ func TestContext_UseSession(t *testing.T) {
 	resp := &MockResponseWriter{HeaderMap: make(http.Header), Body: bytes.Buffer{}}
 
 	// mock store
-	store := &_default.Store{}
-	store.Init(time.Hour)
+	s := &store.Default{}
+	s.Init(time.Hour)
 
 	// test UseSession first
 	context := &Context{
 		r:       req,
 		w:       resp,
 		routes:  nil,
-		session: newSession(store),
-		config:  &Config{SessionGenerator: &_default.Generator{}},
+		session: newSession(s),
+		config:  &Config{SessionGenerator: &generator.Default{}},
 	}
 	context.UseSession()
 	if context.session == nil {

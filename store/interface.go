@@ -1,4 +1,4 @@
-package _interface
+package store
 
 import "time"
 
@@ -9,8 +9,4 @@ type Store interface {
 	Set(token, key string, value any)
 	Del(token, key string)
 	KeepAlive(token string)
-}
-
-type Generator interface {
-	Rand() string
 }

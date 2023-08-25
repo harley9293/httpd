@@ -1,13 +1,15 @@
 package httpd
 
-import "github.com/harley9293/httpd/interface"
+import (
+	"github.com/harley9293/httpd/store"
+)
 
 type Session struct {
-	store _interface.Store
+	store store.Store
 	token string
 }
 
-func newSession(store _interface.Store) *Session {
+func newSession(store store.Store) *Session {
 	return &Session{store: store}
 }
 

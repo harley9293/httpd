@@ -2,7 +2,7 @@ package httpd
 
 import (
 	log "github.com/harley9293/blotlog"
-	"github.com/harley9293/httpd/interface"
+	"github.com/harley9293/httpd/store"
 	"net/http"
 )
 
@@ -11,7 +11,7 @@ type Service struct {
 
 	globalMiddlewares []MiddlewareFunc
 	router            *router
-	store             _interface.Store
+	store             store.Store
 	config            *Config
 }
 

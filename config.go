@@ -1,22 +1,24 @@
 package httpd
 
 import (
-	"github.com/harley9293/httpd/default"
-	"github.com/harley9293/httpd/interface"
+	"github.com/harley9293/httpd/generator"
+	"github.com/harley9293/httpd/orm"
+	"github.com/harley9293/httpd/store"
 	"time"
 )
 
 type Config struct {
-	SessionStore         _interface.Store
+	SessionStore         store.Store
 	SessionKeepAliveTime time.Duration
-	SessionGenerator     _interface.Generator
+	SessionGenerator     generator.Generator
+	ORM                  orm.ORM
 }
 
 func (c *Config) fill() {
 	if c.SessionStore == nil {
-		c.SessionStore = &_default.Store{}
+		c.SessionStore = &store.Default{}
 	}
 	if c.SessionGenerator == nil {
-		c.SessionGenerator = &_default.Generator{}
+		c.SessionGenerator = &generator.Default{}
 	}
 }

@@ -1,9 +1,9 @@
-package _default
+package store
 
 import "testing"
 
 func TestDefaultStore(t *testing.T) {
-	store := &Store{}
+	store := &Default{}
 	store.Init(0)
 
 	// before Use

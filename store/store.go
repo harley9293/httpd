@@ -1,18 +1,18 @@
-package _default
+package store
 
 import "time"
 
-type Store struct {
+type Default struct {
 	sessionMap    map[string]map[string]any
 	keepAliveTime time.Duration
 }
 
-func (s *Store) Init(keepAliveTime time.Duration) {
+func (s *Default) Init(keepAliveTime time.Duration) {
 	s.sessionMap = make(map[string]map[string]any)
 	s.keepAliveTime = keepAliveTime
 }
 
-func (s *Store) Use(token string) {
+func (s *Default) Use(token string) {
 	ss, ok := s.sessionMap[token]
 	if !ok || ss["__keep_alive_time"].(time.Time).Before(time.Now()) {
 		s.sessionMap[token] = make(map[string]any)
@@ -20,7 +20,7 @@ func (s *Store) Use(token string) {
 	s.KeepAlive(token)
 }
 
-func (s *Store) Get(token, key string) any {
+func (s *Default) Get(token, key string) any {
 	if _, ok := s.sessionMap[token]; !ok {
 		return nil
 	}
@@ -28,7 +28,7 @@ func (s *Store) Get(token, key string) any {
 	return s.sessionMap[token][key]
 }
 
-func (s *Store) Set(token, key string, value any) {
+func (s *Default) Set(token, key string, value any) {
 	if _, ok := s.sessionMap[token]; !ok {
 		return
 	}
@@ -36,13 +36,13 @@ func (s *Store) Set(token, key string, value any) {
 	s.sessionMap[token][key] = value
 }
 
-func (s *Store) Del(token, key string) {
+func (s *Default) Del(token, key string) {
 	if _, ok := s.sessionMap[token]; ok {
 		delete(s.sessionMap[token], key)
 	}
 }
 
-func (s *Store) KeepAlive(token string) {
+func (s *Default) KeepAlive(token string) {
 	ss, ok := s.sessionMap[token]
 	if !ok {
 		return

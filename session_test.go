@@ -1,15 +1,15 @@
 package httpd
 
 import (
-	"github.com/harley9293/httpd/default"
+	"github.com/harley9293/httpd/store"
 	"testing"
 )
 
 func TestSession(t *testing.T) {
-	store := &_default.Store{}
-	store.Init(0)
+	s := &store.Default{}
+	s.Init(0)
 
-	session := newSession(store)
+	session := newSession(s)
 	session.Use("test")
 	session.Set("test", "test")
 	if session.Get("test").(string) != "test" {

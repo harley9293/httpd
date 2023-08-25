@@ -1,14 +1,14 @@
-package _default
+package generator
 
 import (
 	"encoding/base64"
 	"math/rand"
 )
 
-type Generator struct {
+type Default struct {
 }
 
-func (s *Generator) Rand() string {
+func (s *Default) Rand() string {
 	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	const keyLength = 20
 
