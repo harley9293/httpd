@@ -7,21 +7,21 @@ import (
 )
 
 type Service struct {
-	srv *http.Server
+	srv    *http.Server
+	config *Config
 
 	globalMiddlewares []MiddlewareFunc
 	router            *router
 	session           session.Session
-	config            *Config
 }
 
 func NewService(config *Config) *Service {
 	config.fill()
 	s := &Service{}
+	s.config = config
 	s.router = newRouter()
 	s.session = config.Session
 	s.session.Init(config.SessionKeepAliveTime)
-	s.config = config
 	return s
 }
 
