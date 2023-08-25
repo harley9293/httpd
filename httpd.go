@@ -2,7 +2,7 @@ package httpd
 
 import (
 	log "github.com/harley9293/blotlog"
-	"github.com/harley9293/httpd/store"
+	"github.com/harley9293/httpd/session"
 	"net/http"
 )
 
@@ -11,7 +11,7 @@ type Service struct {
 
 	globalMiddlewares []MiddlewareFunc
 	router            *router
-	store             store.Store
+	session           session.Session
 	config            *Config
 }
 
@@ -19,8 +19,8 @@ func NewService(config *Config) *Service {
 	config.fill()
 	s := &Service{}
 	s.router = newRouter()
-	s.store = config.SessionStore
-	s.store.Init(config.SessionKeepAliveTime)
+	s.session = config.Session
+	s.session.Init(config.SessionKeepAliveTime)
 	s.config = config
 	return s
 }
@@ -45,7 +45,7 @@ func (m *Service) LinstenAndServe(address string) error {
 			r:       r,
 			w:       w,
 			routes:  ro,
-			session: newSession(m.store),
+			session: m.session,
 			config:  m.config,
 		}
 		c.Next()

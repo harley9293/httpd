@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	log "github.com/harley9293/blotlog"
+	"github.com/harley9293/httpd/session"
 	"net/http"
 	"reflect"
 )
@@ -13,31 +14,14 @@ const IndexError = -1
 type MiddlewareFunc func(*Context)
 
 type Context struct {
-	r       *http.Request
-	w       http.ResponseWriter
-	routes  *routes
-	session *Session
-	config  *Config
+	r      *http.Request
+	w      http.ResponseWriter
+	index  int
+	config *Config
+	routes *routes
 
-	index int
-}
-
-func (c *Context) UseSession() *Session {
-	cookie, err := c.r.Cookie("token")
-	var token string
-	if err == nil && cookie != nil {
-		token = cookie.Value
-	} else {
-		token = c.config.SessionGenerator.Rand()
-	}
-	c.session.Use(token)
-
-	http.SetCookie(c.w, &http.Cookie{
-		Name:  "token",
-		Value: token,
-	})
-
-	return c.session
+	token   string
+	session session.Session
 }
 
 func (c *Context) Error(status int, err error) {
@@ -124,4 +108,37 @@ func (c *Context) callHandler() {
 
 	params = append(params, reflect.ValueOf(c))
 	c.routes.fn.Call(params)
+}
+
+func (c *Context) UseSession() {
+	cookie, err := c.r.Cookie("token")
+	var token string
+	if err == nil && cookie != nil {
+		token = cookie.Value
+	} else {
+		token = c.config.SessionGenerator.Rand()
+	}
+	c.token = token
+	c.session.Use(token)
+
+	http.SetCookie(c.w, &http.Cookie{
+		Name:  "token",
+		Value: token,
+	})
+}
+
+func (c *Context) Get(key string) any {
+	return c.session.Get(c.token, key)
+}
+
+func (c *Context) Set(key string, value any) {
+	c.session.Set(c.token, key, value)
+}
+
+func (c *Context) Del(key string) {
+	c.session.Del(c.token, key)
+}
+
+func (c *Context) KeepAlive() {
+	c.session.KeepAlive(c.token)
 }

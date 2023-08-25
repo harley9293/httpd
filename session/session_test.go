@@ -1,4 +1,4 @@
-package store
+package session
 
 import "testing"
 
@@ -8,12 +8,12 @@ func TestDefaultStore(t *testing.T) {
 
 	// before Use
 	if store.Get("test", "test") != nil {
-		t.Error("store get error")
+		t.Error("session get error")
 	}
 
 	store.Set("test", "test", "test")
 	if store.Get("test", "test") != nil {
-		t.Error("store set error")
+		t.Error("session set error")
 	}
 
 	store.Del("test", "test")
@@ -23,15 +23,15 @@ func TestDefaultStore(t *testing.T) {
 	store.Use("test")
 	store.Set("test", "test", "test")
 	if store.Get("test", "test").(string) != "test" {
-		t.Error("store set error")
+		t.Error("session set error")
 	}
 	store.Del("test", "test")
 	if store.Get("test", "test") != nil {
-		t.Error("store del error")
+		t.Error("session del error")
 	}
 	store.Use("test")
 	store.KeepAlive("test")
 	if store.Get("test", "__keep_alive_time") == nil {
-		t.Error("store keep alive error")
+		t.Error("session keep alive error")
 	}
 }

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"github.com/harley9293/httpd/generator"
-	"github.com/harley9293/httpd/store"
+	"github.com/harley9293/httpd/session"
 	"net/http"
 	"reflect"
 	"testing"
@@ -37,8 +37,8 @@ func TestContext_UseSession(t *testing.T) {
 	req, _ := http.NewRequest("GET", "http://localhost:8080/", nil)
 	resp := &MockResponseWriter{HeaderMap: make(http.Header), Body: bytes.Buffer{}}
 
-	// mock store
-	s := &store.Default{}
+	// mock session
+	s := &session.Default{}
 	s.Init(time.Hour)
 
 	// test UseSession first
@@ -46,14 +46,14 @@ func TestContext_UseSession(t *testing.T) {
 		r:       req,
 		w:       resp,
 		routes:  nil,
-		session: newSession(s),
+		session: s,
 		config:  &Config{SessionGenerator: &generator.Default{}},
 	}
 	context.UseSession()
 	if context.session == nil {
 		t.Error("context use session error")
 	}
-	context.session.Set("test", "test")
+	context.Set("test", "test")
 
 	// test UseSession second
 	cookies := resp.Header()["Set-Cookie"]
@@ -61,9 +61,18 @@ func TestContext_UseSession(t *testing.T) {
 		req.Header.Add("Cookie", cookie)
 	}
 	context.UseSession()
-	if context.session.Get("test").(string) != "test" {
+	if context.Get("test").(string) != "test" {
 		t.Error("context use session error")
 	}
+
+	// test DeleteSession
+	context.Del("test")
+	if context.Get("test") != nil {
+		t.Error("context delete session error")
+	}
+
+	// test keep alive
+	context.KeepAlive()
 }
 
 func TestContext_Response(t *testing.T) {

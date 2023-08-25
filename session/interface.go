@@ -1,8 +1,8 @@
-package store
+package session
 
 import "time"
 
-type Store interface {
+type Session interface {
 	Init(keepAliveTime time.Duration)
 	Use(token string)
 	Get(token, key string) any
