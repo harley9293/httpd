@@ -1,6 +1,7 @@
 package httpd
 
 import (
+	"context"
 	log "github.com/harley9293/blotlog"
 	"github.com/harley9293/httpd/session"
 	"net/http"
@@ -56,5 +57,5 @@ func (m *Service) LinstenAndServe(address string) error {
 }
 
 func (m *Service) Close() error {
-	return m.srv.Close()
+	return m.srv.Shutdown(context.Background())
 }
