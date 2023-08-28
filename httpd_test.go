@@ -49,3 +49,12 @@ func TestService(t *testing.T) {
 		t.Error("service linsten and serve error")
 	}
 }
+
+func TestService_Close(t *testing.T) {
+	s := NewService(&Config{})
+	go func() {
+		_ = s.LinstenAndServe(":8080")
+	}()
+	time.Sleep(100 * time.Millisecond)
+	_ = s.Close()
+}

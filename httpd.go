@@ -54,3 +54,7 @@ func (m *Service) LinstenAndServe(address string) error {
 
 	return m.srv.ListenAndServe()
 }
+
+func (m *Service) Close() error {
+	return m.srv.Close()
+}
