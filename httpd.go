@@ -23,18 +23,13 @@ func NewService(config *Config) *Service {
 	s.router = newRouter()
 	s.session = config.Session
 	s.session.Init(config.SessionKeepAliveTime)
+
+	s.init()
+
 	return s
 }
 
-func (m *Service) AddHandler(method, path string, f any, middleware ...MiddlewareFunc) error {
-	return m.router.register(method, path, f, append(m.globalMiddlewares, middleware...)...)
-}
-
-func (m *Service) AddMiddleWare(f ...MiddlewareFunc) {
-	m.globalMiddlewares = append(m.globalMiddlewares, f...)
-}
-
-func (m *Service) LinstenAndServe(address string) error {
+func (m *Service) init() {
 	serveMux := http.NewServeMux()
 	serveMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		log.Info("recv|%s|%s", r.Method, r.URL)
@@ -51,8 +46,18 @@ func (m *Service) LinstenAndServe(address string) error {
 		}
 		c.Next()
 	})
-	m.srv = &http.Server{Addr: address, Handler: serveMux}
+	m.srv = &http.Server{Addr: m.config.Address, Handler: serveMux}
+}
 
+func (m *Service) AddHandler(method, path string, f any, middleware ...MiddlewareFunc) error {
+	return m.router.register(method, path, f, append(m.globalMiddlewares, middleware...)...)
+}
+
+func (m *Service) AddMiddleWare(f ...MiddlewareFunc) {
+	m.globalMiddlewares = append(m.globalMiddlewares, f...)
+}
+
+func (m *Service) LinstenAndServe() error {
 	return m.srv.ListenAndServe()
 }
 

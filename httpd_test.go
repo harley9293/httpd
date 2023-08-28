@@ -7,7 +7,7 @@ import (
 )
 
 func TestService(t *testing.T) {
-	s := NewService(&Config{})
+	s := NewService(&Config{Address: ":8080"})
 
 	s.AddMiddleWare(func(c *Context) {
 		c.Next()
@@ -27,7 +27,7 @@ func TestService(t *testing.T) {
 	}
 
 	go func() {
-		_ = s.LinstenAndServe(":8080")
+		_ = s.LinstenAndServe()
 	}()
 	time.Sleep(100 * time.Millisecond)
 
@@ -51,9 +51,9 @@ func TestService(t *testing.T) {
 }
 
 func TestService_Close(t *testing.T) {
-	s := NewService(&Config{})
+	s := NewService(&Config{Address: ":8080"})
 	go func() {
-		_ = s.LinstenAndServe(":8080")
+		_ = s.LinstenAndServe()
 	}()
 	time.Sleep(100 * time.Millisecond)
 	_ = s.Close()

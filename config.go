@@ -7,6 +7,7 @@ import (
 )
 
 type Config struct {
+	Address              string
 	Session              session.Session
 	SessionKeepAliveTime time.Duration
 	SessionGenerator     generator.Generator
